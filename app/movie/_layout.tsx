@@ -33,7 +33,7 @@ export default function Layout() {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.createdText}>Created : Lakruwani Pabasara</Text>
+      <Text style={styles.createdText}>Created : Dragon-Fly</Text>
     </View>
   );
 }
