@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore"; 
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { auth, db } from "./firebaseconfig"; 
+import { auth, db } from "../../firebaseconfig"; 
 
 export default function Register() {
   const [name, setName] = useState<string>("");

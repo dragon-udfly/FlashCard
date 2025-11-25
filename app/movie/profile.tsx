@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { auth, db } from "../login/firebaseconfig";
+import { auth, db } from "../../firebaseconfig";
 
 export default function Profile() {
   const router = useRouter();
