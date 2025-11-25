@@ -10,7 +10,6 @@ export default function Home() {
     const handleLogin = async () => {
         setLoading(true);
         try {
-            // Add your login logic here
             console.log('Login attempt:', { email, password });
         } catch (error) {
             console.error('Login failed:', error);
