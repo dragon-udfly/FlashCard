@@ -42,4 +42,4 @@ app-example
 /ios
 /android
 
-app/login/firebaseconfig.tsx
+app/login/firebaseconfig.ts
