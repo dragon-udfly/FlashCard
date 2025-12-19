@@ -1,4 +1,4 @@
-//details of moves
+
 
 export const movies = [
   {

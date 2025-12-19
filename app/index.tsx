@@ -1,80 +1,212 @@
-import { router } from "expo-router";
-import Lottie from "lottie-react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useColorScheme,
+} from "react-native";
+import { movies } from "../assets/data/movies";
+import { translations } from "./translations";
 
-export default function SplashScreen() {
-  const [step, setStep] = useState(0);
+const screenWidth = Dimensions.get("window").width;
 
-  const screens = [
-    {
-      animation: require("../assets/images/Hello.json"),
-      title: "Welcome to MovieApp",
-      subtitle: "Discover movies that match your vibe",
-    },
-    {
-      animation: require("../assets/images/Search Concept.json"),
-      title: "Explore Movies",
-      subtitle: "Search movies by genre, cast, and more",
-    },
-    {
-      animation: require("../assets/images/Watch a movie.json"),
-      title: "Favorites",
-      subtitle: "Save your favorite movies in one place",
-    },
-  ];
+export default function Home() {
+  const router = useRouter();
+  const colorScheme = useColorScheme();
 
-  const gotoLogin = () => router.replace("/login/Login");
+  const [search, setSearch] = useState("");
+  const [recentMovies, setRecentMovies] = useState<typeof movies>([]);
+  const [lang, setLang] = useState<"en" | "ta" | "si">("en");
+  const [theme, setTheme] = useState<"light" | "dark">(colorScheme === "dark" ? "dark" : "light");
 
+  const t = translations[lang]; // current translation
+
+  // Load recently viewed movies
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (step < screens.length - 1) setStep(step + 1);
-      else gotoLogin();
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [step]);
+    const loadRecentlyViewed = async () => {
+      try {
+        const stored = await AsyncStorage.getItem("recentlyViewed");
+        const recentIds: number[] = stored ? JSON.parse(stored) : [];
+        const recent = recentIds
+          .map((id) => movies.find((m) => m.id === id))
+          .filter(Boolean) as typeof movies;
+        setRecentMovies(recent);
+      } catch (e) {
+        console.log("Error loading recently viewed:", e);
+      }
+    };
+    loadRecentlyViewed();
+  }, []);
 
-  const next = () => (step < screens.length - 1 ? setStep(step + 1) : gotoLogin());
-  const prev = () => step > 0 && setStep(step - 1);
+  // Filter movies by search
+  const filteredMovies = movies.filter(
+    (movie) =>
+      movie.name.toLowerCase().includes(search.toLowerCase()) ||
+      movie.genre.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const renderMovie = ({ item }: any) => (
+    <TouchableOpacity
+      style={[
+        styles.card,
+        theme === "dark" ? { backgroundColor: "#1e293b" } : { backgroundColor: "#f0f0f0" },
+      ]}
+      onPress={() => router.push(`/movie/${item.id}`)}
+    >
+      <Image source={item.image} style={styles.image} />
+      <Text style={[styles.movieName, theme === "dark" ? { color: "#fff" } : { color: "#000" }]}>
+        {item.name}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+  const toggleLang = () => setLang(lang === "en" ? "ta" : lang === "ta" ? "si" : "en");
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.skipBtn} onPress={gotoLogin}>
-        <Text style={styles.skipText}>Skip</Text>
-      </TouchableOpacity>
-      <Lottie
-        animationData={screens[step].animation}
-        loop
-        autoplay
-        style={styles.animation}
-      />
-      <Text style={styles.title}>{screens[step].title}</Text>
-      <Text style={styles.subtitle}>{screens[step].subtitle}</Text>
-
-      <View style={styles.btnRow}>
-        {step > 0 ? (
-          <TouchableOpacity style={styles.navBtn} onPress={prev}>
-            <Text style={styles.navTxt}>Previous</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={{ width: 90 }} />
-        )}
-        <TouchableOpacity style={styles.navBtn} onPress={next}>
-          <Text style={styles.navTxt}>{step === screens.length - 1 ? "Get Started" : "Next"}</Text>
+    <ScrollView
+      style={[styles.container, theme === "dark" ? { backgroundColor: "#0f172a" } : { backgroundColor: "#fff" }]}
+      contentContainerStyle={{ paddingBottom: 80 }}
+    >
+      {/* Language & Theme toggles */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
+        <TouchableOpacity onPress={toggleLang}>
+          <Text style={{ color: theme === "dark" ? "#fff" : "#000", fontWeight: "600" }}>
+            Language: {lang.toUpperCase()}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={toggleTheme}>
+          <Text style={{ color: theme === "dark" ? "#fff" : "#000", fontWeight: "600" }}>
+            {theme === "dark" ? t.themeDark : t.themeLight}
+          </Text>
         </TouchableOpacity>
       </View>
-    </View>
+
+      <Text style={[styles.header, theme === "dark" ? { color: "#fff" } : { color: "#000" }]}>
+        {t.movieSuggestions}
+      </Text>
+
+      {/* Search Bar */}
+      <View style={[styles.searchContainer, theme === "dark" ? { backgroundColor: "#1e293b" } : { backgroundColor: "#e0e0e0" }]}>
+        <TextInput
+          placeholder={t.searchPlaceholder}
+          placeholderTextColor={theme === "dark" ? "#94a3b8" : "#555"}
+          style={[styles.searchInput, theme === "dark" ? { color: "#fff" } : { color: "#000" }]}
+          value={search}
+          onChangeText={(text) => setSearch(text)}
+        />
+        <TouchableOpacity onPress={() => setSearch("")}>
+          <Text style={{ color: theme === "dark" ? "#fff" : "#000", marginLeft: 8 }}>✖</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={{ color: theme === "dark" ? "#fff" : "#000", marginBottom: 10 }}>
+        {t.foundMovies.replace("{count}", filteredMovies.length.toString())}
+      </Text>
+
+      {/* Recently Viewed */}
+      {recentMovies.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ color: theme === "dark" ? "#fff" : "#000", fontSize: 20, marginBottom: 10 }}>
+            {t.recentlyViewed}
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {recentMovies.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => router.push(`/movie/${item.id}`)}
+                style={{ marginRight: 15 }}
+              >
+                <Image
+                  source={item.image}
+                  style={{ width: 120, height: 180, borderRadius: 10 }}
+                />
+                <Text
+                  style={{
+                    color: theme === "dark" ? "#fff" : "#000",
+                    width: 120,
+                    textAlign: "center",
+                    marginTop: 5,
+                  }}
+                >
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Movies Grid */}
+      <FlatList
+        data={filteredMovies}
+        renderItem={renderMovie}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <Text style={[styles.noResults, theme === "dark" ? { color: "#94a3b8" } : { color: "#555" }]}>
+            {t.noMovies}
+          </Text>
+        }
+        contentContainerStyle={{ paddingBottom: 80 }}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F7FF", alignItems: "center", justifyContent: "center", paddingHorizontal: 25 },
-  skipBtn: { position: "absolute", top: 50, right: 20, backgroundColor: "rgba(0,0,0,0.05)", paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20 },
-  skipText: { fontSize: 15, color: "#555", fontWeight: "600" },
-  animation: { width: 340, height: 340 },
-  title: { fontSize: 28, fontWeight: "800", marginTop: 20, color: "#111", textAlign: "center" },
-  subtitle: { fontSize: 16, color: "#6a6a6a", textAlign: "center", marginTop: 10, lineHeight: 22 },
-  btnRow: { flexDirection: "row", width: "90%", justifyContent: "space-between", marginTop: 40, alignItems: "center" },
-  navBtn: { backgroundColor: "#111", width: 90, height: 50, borderRadius: 25, justifyContent: "center", alignItems: "center" },
-  navTxt: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  container: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingTop: 50,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  searchContainer: {
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginBottom: 20,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 10,
+  },
+  card: {
+    flex: 1,
+    margin: 8,
+    borderRadius: 12,
+    overflow: "hidden",
+    elevation: 5,
+  },
+  image: {
+    width: (screenWidth / 2) - 24,
+    height: 220,
+  },
+  movieName: {
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+    padding: 10,
+  },
+  noResults: {
+    textAlign: "center",
+    fontSize: 16,
+    marginTop: 40,
+  },
 });
