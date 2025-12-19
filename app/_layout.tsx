@@ -28,24 +28,22 @@ export default function Layout() {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push("/favorites")}>
-  <View style={styles.footerItem}>
-    <Ionicons name="heart" size={22} color="#fff" />
-    <Text style={styles.footerText}>Favorites</Text>
-  </View>
-</TouchableOpacity>
+          <View style={styles.footerItem}>
+            <Ionicons name="heart" size={22} color="#fff" />
+            <Text style={styles.footerText}>Favorites</Text>
+          </View>
+        </TouchableOpacity>
 
-<TouchableOpacity onPress={() => router.push("/profile")}>
-  <View style={styles.footerItem}>
-    <Ionicons name="person" size={22} color="#fff" />
-    <Text style={styles.footerText}>Profile</Text>
-  </View>
-</TouchableOpacity>
-
+        <TouchableOpacity onPress={() => router.push("/profile")}>
+          <View style={styles.footerItem}>
+            <Ionicons name="person" size={22} color="#fff" />
+            <Text style={styles.footerText}>Profile</Text>
+          </View>
+        </TouchableOpacity>
       </View>
       <Text style={{ color: "#94a3b8", textAlign: "center", marginTop: 10 }}>
-  Made by Dragon-Fly
-</Text>
-
+         Made by Dragon-Fly
+      </Text>
     </View>
   );
 }
