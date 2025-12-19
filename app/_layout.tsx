@@ -43,7 +43,7 @@ export default function Layout() {
 
       </View>
       <Text style={{ color: "#94a3b8", textAlign: "center", marginTop: 10 }}>
-  Made by [Student Name]
+  Made by Dragon-Fly
 </Text>
 
     </View>
